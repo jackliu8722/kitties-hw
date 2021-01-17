@@ -224,7 +224,14 @@ impl<T: Trait> Module<T> {
 		<OwnedKittiesList<T>>::remove(&from, kitty_id);
 		Self::insert_owned_kitty(&to, kitty_id);
 	}
-}
+
+	pub fn append(who: impl sp_std::borrow::Borrow<T::AccountId>,kitty_id: T::KittyIndex) {
+		<OwnedKittiesList<T>>::append(who.borrow(), kitty_id);
+	}
+
+	pub fn remove(who: impl sp_std::borrow::Borrow<T::AccountId>,kitty_id: T::KittyIndex) {
+		<OwnedKittiesList<T>>::remove(who.borrow(), kitty_id);
+	}}
 
 /// tests for this module
 #[cfg(test)]
@@ -253,6 +260,14 @@ mod tests {
 		pub const MaximumBlockLength: u32 = 2 * 1024;
 		pub const AvailableBlockRatio: Perbill = Perbill::from_percent(75);
 	}
+
+	parameter_types! {
+		pub const MinimumPeriod: u64 = 5;
+		pub const ExistentialDeposit: u64 = 1;
+	}
+
+	type Balance = u64;
+
 	impl system::Trait for Test {
 		type Origin = Origin;
 		type BaseCallFilter = ();
@@ -275,19 +290,43 @@ mod tests {
 		type AvailableBlockRatio = AvailableBlockRatio;
 		type Version = ();
 		type SystemWeightInfo = ();
-		type PalletInfo = PalletInfo;
-		type AccountData = ();
+		type PalletInfo = ();
+		type AccountData = pallet_balances::AccountData<Balance>;
 		type OnNewAccount = ();
 		type OnKilledAccount = ();
-		}
+	}
+
+	impl pallet_timestamp::Trait for Test {
+		type Moment = u64;
+		type OnTimestampSet = ();
+		type MinimumPeriod = MinimumPeriod;
+		type WeightInfo = ();
+	}
+
+	impl pallet_balances::Trait for Test {
+		type MaxLocks = ();
+		type Balance = Balance;
+		type DustRemoval = ();
+		type Event = ();
+		type ExistentialDeposit = ExistentialDeposit;
+		type AccountStore = System;
+		type WeightInfo = ();
+	}
+
+
+	type Randomness = pallet_randomness_collective_flip::Module<Test>;
+	type Balances = pallet_balances::Module<Test>;
 
 	impl Trait for Test {
 		type Event = ();
-		type Currency: Balances;
-		type Randomness: Randomness<H256>;
+		type Currency =  Balances;
+		type Randomness = Randomness;
 		type KittyIndex = u32;
 	}
+
 	type OwnedKittiesTest = OwnedKitties<Test>;
+	type KittiesModule = Module<Test>;
+	pub type System = system::Module<Test>;
 
 	// This function basically just builds a genesis storage key/value store according to
 	// our desired mockup.
@@ -298,9 +337,9 @@ mod tests {
 	#[test]
 	fn owned_kitties_can_append_values() {
 		new_test_ext().execute_with(|| {
-			OwnedKittiesTest::append(&1);
+			KittiesModule::append(0,1);
 
-			assert_eq!(OwnedKittiesTest::get(&(0, None)), Some(KittyLinkedItem {
+			assert_eq!(OwnedKittiesTest::get(&(0, None)), Some(KittyLinkedItem::<Test> {
 				prev: Some(1),
 				next: Some(1),
 			}));
@@ -310,13 +349,13 @@ mod tests {
 	#[test]
 	fn owned_kitties_can_remove_values() {
 		new_test_ext().execute_with(|| {
-			OwnedKittiesTest::append(1);
-			OwnedKittiesTest::append(2);
-			OwnedKittiesTest::append(3);
+			KittiesModule::append(0,1);
+			KittiesModule::append(0,2);
+			KittiesModule::append(0,3);
 
-			OwnedKittiesTest::remove(2);
+			KittiesModule::remove(0,2);
 
-			assert_eq!(OwnedKittiesTest::get(&(0, None)), Some(KittyLinkedItem {
+			assert_eq!(OwnedKittiesTest::get(&(0, None)), Some(KittyLinkedItem::<Test> {
 				prev: Some(3),
 				next: Some(1),
 			}));

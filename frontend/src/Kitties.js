@@ -19,14 +19,47 @@ export default function Kitties (props) {
 
   const fetchKittyCnt = () => {
     /* TODO: 加代码，从 substrate 端读取数据过来 */
+    api.query.kittiesModule.kittiesCount(function (count) {
+      setKittyCnt(count)
+    })
   };
 
   const fetchKitties = () => {
     /* TODO: 加代码，从 substrate 端读取数据过来 */
+    api.query.kittiesModule.kittiesCount(function (count) {
+      var arr = []
+      for(var i = 0 ;i < count.toNumber(); i++){
+        arr.push(i);
+      }
+      api.query.kittiesModule.kitties.multi(arr, result => {
+
+        const kittiesArray = result.map((item,index,arr) => {
+          return item.value;
+        })
+        console.log(kittiesArray)
+
+        setKitties(kittiesArray)
+      })
+    })
   };
 
   const populateKitties = () => {
     /* TODO: 加代码，从 substrate 端读取数据过来 */
+    api.query.kittiesModule.kittiesCount(function (count) {
+      var arr = []
+      for(var i = 0 ;i < count.toNumber(); i++){
+        arr.push(i);
+      }
+      api.query.kittiesModule.kittyOwners.multi(arr, result => {
+
+        const owners = result.map((item,index,arr) => {
+          return item.value;
+        })
+        console.log(owners)
+
+        setKittyOwners(owners)
+      })
+    })
   };
 
   useEffect(fetchKittyCnt, [api, keyring]);
@@ -51,4 +84,4 @@ export default function Kitties (props) {
     </Form>
     <div style={{ overflowWrap: 'break-word' }}>{status}</div>
   </Grid.Column>;
-}
+};

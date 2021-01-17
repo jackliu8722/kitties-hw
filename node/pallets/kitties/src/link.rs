@@ -37,9 +37,73 @@ impl<Storage, Key, Value> LinkedList<Storage, Key, Value> where
 
 	pub fn append(key: &Key, value: Value) {
 		// 作业
+		let mut head = Self::read_head(key);
+		// no element
+		if head.prev.is_none() {
+			Self::write_head(key,LinkedItem{ prev: Some(value), next: Some(value)});
+		}else {
+
+			let prev = head.prev;
+			let mut prev_node = Self::read(key,prev);
+			prev_node.next = Some(value);
+			Self::write(key,prev, prev_node);
+
+			let new_node = LinkedItem {
+				prev,
+				next: None,
+			};
+			Self::write(key,Some(value),new_node);
+
+			head.prev = Some(value);
+			Self::write_head(key,head);
+
+		}
 	}
 
 	pub fn remove(key: &Key, value: Value) {
 		// 作业
+		let mut head = Self::read_head(key);
+
+		let node = Self::read(key,Some(value));
+
+		// last element
+		match (node.prev,node.next) {
+			(None,None) => {
+				if head.prev.unwrap() == value {
+					head.prev = None;
+					head.next = None;
+					Self::write_head(key,head);
+				}
+			},
+			(None,next) => {
+				// first element
+				let mut next_node = Self::read(key,next);
+				next_node.prev = None;
+				Self::write(key,next,next_node);
+				head.next = next;
+				Self::write_head(key,head);
+				Self::write(key,Some(value),LinkedItem{prev:None,next:None});
+			},
+			(prev,None) => {
+				// last emelent
+				let mut prev_node = Self::read(key,prev);
+				prev_node.next = None;
+				Self::write(key,prev,prev_node);
+				head.prev = prev;
+				Self::write_head(key,head);
+				Self::write(key,Some(value),LinkedItem{prev:None,next:None});
+			},
+			(prev,next) => {
+				let mut prev_node = Self::read(key,prev);
+				prev_node.next = next;
+				Self::write(key,prev,prev_node);
+
+				let mut next_node = Self::read(key,next);
+				next_node.prev = prev;
+				Self::write(key,next,next_node);
+				Self::write(key,Some(value),LinkedItem{prev:None,next:None});
+			}
+		}
+
 	}
 }

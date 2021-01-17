@@ -46,20 +46,21 @@ const TransferModal = props => {
 // --- About Kitty Card ---
 
 const KittyCard = props => {
-  /*
-    TODO: 加代码。这里会 UI 显示一张 `KittyCard` 是怎么样的。这里会用到：
-    ```
-    <KittyAvatar dna={dna} /> - 来描绘一只猫咪
-    <TransferModal kitty={kitty} accountPair={accountPair} setStatus={setStatus}/> - 来作转让的弹出层
-    ```
-  */
+  const { kitty, dna, accountPair, setStatus } = props;
+
+    console.log(kitty);
+    <KittyAvatar dna={dna} />;
+    <TransferModal kitty={kitty} accountPair={accountPair} setStatus={setStatus} />;
+
   return null;
 };
 
 const KittyCards = props => {
   const { kitties, accountPair, setStatus } = props;
-
-  /* TODO: 加代码。这里会枚举所有的 `KittyCard` */
+  kitties.forEach((item,index,kitties) => {
+    console.log(item);
+    <KittyCard kitty={index} dna={item} accountPair={accountPair} setStatus={setStatus} />;
+  });
   return null;
 };
 
