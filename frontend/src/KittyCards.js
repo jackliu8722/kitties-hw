@@ -9,10 +9,14 @@ import { TxButton } from './substrate-lib/components';
 const TransferModal = props => {
   const { kitty, accountPair, setStatus } = props;
   const [open, setOpen] = React.useState(false);
-  const [formValue, setFormValue] = React.useState({});
+  const [formValue, setFormValue] = React.useState({target:null});
 
   const formChange = key => (ev, el) => {
     /* TODO: 加代码 */
+    console.log(key)
+    console.log(el)
+    setFormValue((prev => ({ ...prev, [key]: el.value })));
+    console.log(formValue)
   };
 
   const confirmAndClose = (unsub) => {
@@ -43,25 +47,69 @@ const TransferModal = props => {
   </Modal>;
 };
 
+
+const KittyOwner = props =>{
+  const {kitty, accountPair, setStatus} = props;
+  if (kitty.owner == accountPair.address) {
+    return (
+      <Label style={{backgroundColor:'green'}}>
+        It's myself.
+      </Label>
+    )
+  }else {
+    return null;
+  }
+}
+
 // --- About Kitty Card ---
 
 const KittyCard = props => {
-  const { kitty, dna, accountPair, setStatus } = props;
+  const { kitty, accountPair, setStatus } = props;
 
     console.log(kitty);
-    <KittyAvatar dna={dna} />;
-    <TransferModal kitty={kitty} accountPair={accountPair} setStatus={setStatus} />;
 
-  return null;
+
+  return (
+    <Card>
+      <Card.Content>
+        <KittyOwner kitty={kitty} accountPair={accountPair} setStatus={setStatus}/>
+        <KittyAvatar dna={kitty.dna} />
+        <Message>
+          <Card.Header>ID:{kitty.id}</Card.Header><br/>
+          <Card.Meta style={{overflowWrap: 'break-word'}}>DNA:{kitty.dna.join(",")}</Card.Meta><br/>
+          <span style={{overflowWrap: 'break-word'}}>Owner:{kitty.owner}</span><br/>
+          <span>{kitty.price}</span><br/>
+        </Message>
+      </Card.Content>
+      <Card.Content extra>
+        <TransferModal kitty={kitty} accountPair={accountPair} setStatus={setStatus}/>
+      </Card.Content>
+    </Card>
+  );
 };
 
 const KittyCards = props => {
   const { kitties, accountPair, setStatus } = props;
-  kitties.forEach((item,index,kitties) => {
-    console.log(item);
-    <KittyCard kitty={index} dna={item} accountPair={accountPair} setStatus={setStatus} />;
-  });
-  return null;
+  console.log(kitties)
+  if (kitties.length > 0 ) {
+    return <div>
+      <Grid stackable columns='equal'>
+        {
+          kitties.map(item => {
+            return (
+              <Grid.Column width={5}>
+                <KittyCard kitty={item} accountPair={accountPair} setStatus={setStatus}/>
+              </Grid.Column>
+            )
+          })
+        }
+      </Grid>
+    </div>
+
+  }else {
+    return <div>No kitty</div>;
+  }
+
 };
 
 export default KittyCards;
